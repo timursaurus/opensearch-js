@@ -17,7 +17,7 @@
  * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -30,7 +30,7 @@
 import Debug from 'debug';
 import { stringify } from 'querystring';
 import sjson from 'secure-json-parse';
-import { DeserializationError, SerializationError } from './errors';
+import { DeserializationError, SerializationError } from '@/errors';
 const debug = Debug('opensearch');
 
 export interface SerializerOptions {
@@ -67,6 +67,7 @@ export class Serializer {
     debug('Deserializing', json);
     let object;
     try {
+      // @ts-expect-error
       object = sjson.parse(json, this[kJsonOptions]);
     } catch (e: unknown) {
       const error = e as Error;
