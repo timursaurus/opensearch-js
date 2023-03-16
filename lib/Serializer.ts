@@ -27,62 +27,73 @@
  * under the License.
  */
 
-'use strict';
+import Debug from 'debug';
+import { stringify } from 'querystring';
+import sjson from 'secure-json-parse';
+import { DeserializationError, SerializationError } from './errors';
+const debug = Debug('opensearch');
 
-const { stringify } = require('querystring');
-const debug = require('debug')('opensearch');
-const sjson = require('secure-json-parse');
-const { SerializationError, DeserializationError } = require('./errors');
-const kJsonOptions = Symbol('secure json parse options');
+export interface SerializerOptions {
+  disablePrototypePoisoningProtection?: boolean | 'proto' | 'constructor';
+}
+const kJsonOptions = Symbol('Secure json parse options');
 
-class Serializer {
-  constructor(opts = {}) {
-    const disable = opts.disablePrototypePoisoningProtection;
+export class Serializer {
+  [kJsonOptions]: {
+    protoAction: 'ignore' | 'error';
+    constructorAction: 'ignore' | 'error';
+  };
+  constructor(opts: SerializerOptions = {}) {
+    const disable = opts.disablePrototypePoisoningProtection ?? false;
     this[kJsonOptions] = {
       protoAction: disable === true || disable === 'proto' ? 'ignore' : 'error',
       constructorAction: disable === true || disable === 'constructor' ? 'ignore' : 'error',
     };
   }
 
-  serialize(object) {
+  static serialize(object: Record<string, unknown>): string {
     debug('Serializing', object);
-    let json;
+    let json: string;
     try {
       json = JSON.stringify(object);
-    } catch (err) {
-      throw new SerializationError(err.message, object);
+    } catch (e: unknown) {
+      const error = e as Error;
+      throw new SerializationError(error.message, object);
     }
     return json;
   }
 
-  deserialize(json) {
+  static deserialize<T = unknown>(json: string): T {
     debug('Deserializing', json);
     let object;
     try {
+      // @ts-expect-error
       object = sjson.parse(json, this[kJsonOptions]);
-    } catch (err) {
-      throw new DeserializationError(err.message, json);
+    } catch (e: unknown) {
+      const error = e as Error;
+      throw new DeserializationError(error.message as string, json);
     }
     return object;
   }
 
-  ndserialize(array) {
+  static ndserialize(array: (string | Record<string, unknown>)[]): string {
     debug('ndserialize', array);
-    if (Array.isArray(array) === false) {
+    if (!Array.isArray(array)) {
       throw new SerializationError('The argument provided is not an array', array);
     }
-    let ndjson = '';
+    let ndjson: string = '';
     for (let i = 0, len = array.length; i < len; i++) {
       if (typeof array[i] === 'string') {
         ndjson += array[i] + '\n';
       } else {
+        // @ts-expect-error
         ndjson += this.serialize(array[i]) + '\n';
       }
     }
     return ndjson;
   }
 
-  qserialize(object) {
+  static qserialize(object?: Record<string, unknown>): string {
     debug('qserialize', object);
     if (object == null) return '';
     if (typeof object === 'string') return object;
@@ -93,12 +104,12 @@ class Serializer {
       // OpenSearch will complain about keys without a value
       if (object[key] === undefined) {
         delete object[key];
-      } else if (Array.isArray(object[key]) === true) {
-        object[key] = object[key].join(',');
+      } else if (Array.isArray(object[key])) {
+        object[key] = (object[key] as string[]).join(',');
       }
     }
-    return stringify(object);
+    return stringify(object as Record<string, string>);
   }
 }
 
-module.exports = Serializer;
+export default Serializer;
