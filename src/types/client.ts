@@ -1,6 +1,6 @@
 import { agentFn, AgentOptions } from "./connection";
 import { BasicAuth } from "./pool";
-import { Serializer } from '#transport'
+import { Serializer, Transport } from '#transport'
 import { Context, generateRequestIdFn, MemoryCircuitBreakerOptions, nodeFilterFn, nodeSelectorFn } from "./transport";
 
 

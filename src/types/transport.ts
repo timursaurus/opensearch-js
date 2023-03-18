@@ -64,7 +64,7 @@ export interface MemoryCircuitBreakerOptions {
   maxPercentage: number;
 }
 
-interface TransportOptions {
+export interface TransportOptions {
   emit: (event: string | symbol, ...args: any[]) => boolean;
   connectionPool: ConnectionPool | CloudConnectionPool;
   serializer: Serializer;
