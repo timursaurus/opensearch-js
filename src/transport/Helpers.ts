@@ -34,6 +34,7 @@ import { ResponseError, ConfigurationError } from '@/errors';
 import { NOOP } from '@/utils';
 import { RequestBody, TransportRequestOptions } from '../types/transport';
 import { Search } from '../types/params';
+import { BulkHelperOptions, HelpersOptions, MsearchHelper, MsearchHelperOptions } from '../types/helpers';
 
 const pImmediate = promisify(setImmediate);
 const sleep = promisify(setTimeout);
@@ -66,8 +67,13 @@ const kMetaHeader = Symbol('meta header');
 //   ): BulkHelper<BulkStats>;
 // }
 
+import { Client } from '#/index'
+
 export class Helpers {
-  constructor(opts) {
+  [kClient]: Client;
+  [kMetaHeader]: string;
+  maxRetries: number;
+  constructor(opts: HelpersOptions) {
     this[kClient] = opts.client;
     this[kMetaHeader] = opts.metaHeader;
     this.maxRetries = opts.maxRetries;
@@ -203,7 +209,6 @@ export class Helpers {
     }
   }
 
-
   /**
    * Creates a msearch helper instance. Once you configure it, you can use the provided
    * `search` method to add new searches in the queue.
@@ -211,7 +216,7 @@ export class Helpers {
    * @param {object} reqOptions - The client optional configuration for this request.
    * @return {object} The possible operations to run.
    */
-  msearch(options = {}, reqOptions = {}) {
+  msearch(options: MsearchHelperOptions = {}, reqOptions: TransportRequestOptions = {}): MsearchHelper {
     const client = this[kClient];
     const {
       operations = 5,
@@ -455,7 +460,10 @@ export class Helpers {
       }
     }
   }
-
+  // bulk<TDocument = unknown>(
+//     options: BulkHelperOptions<TDocument>,
+//     reqOptions?: TransportRequestOptions
+//   ): BulkHelper<BulkStats>;
   /**
    * Creates a bulk helper instance. Once you configure it, you can pick which operation
    * to execute with the given dataset, index, create, update, and delete.
@@ -463,9 +471,9 @@ export class Helpers {
    * @param {object} reqOptions - The client optional configuration for this request.
    * @return {object} The possible operations to run with the datasource.
    */
-  bulk(options, reqOptions = {}) {
+  bulk<TDocument = unknown>(options: BulkHelperOptions<TDocument>, reqOptions?: TransportRequestOptions) {
     const client = this[kClient];
-    const { serializer } = client;
+    const { serializer } =  client;
     if (this[kMetaHeader] !== null) {
       reqOptions.headers = reqOptions.headers || {};
     }
