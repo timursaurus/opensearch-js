@@ -162,26 +162,11 @@ export class NoLivingConnectionsError<
     this.meta = meta;
   }
 }
-
-// export declare class SerializationError extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   data: any;
-//   constructor(message: string, data: any);
-// }
-
-// export declare class DeserializationError extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   data: string;
-//   constructor(message: string, data: string);
-// }
-
 export class SerializationError extends OpenSearchClientError {
   name: string;
   message: string;
   data: any;
-  constructor(message: string, data) {
+  constructor(message: string, data: any) {
     super(message);
     Error.captureStackTrace(this, SerializationError);
     this.name = 'SerializationError';

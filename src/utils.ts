@@ -30,12 +30,12 @@
 const result = { body: null, statusCode: null, headers: null, warnings: null };
 export const kConfigurationError = Symbol('Configuration error');
 
-export function handleError(err: symbol, callback: Function) {
+export function handleError(error: symbol, callback: Function) {
   if (callback) {
-    process.nextTick(callback, err, result);
+    process.nextTick(callback, error, result);
     return { then: NOOP, catch: NOOP, abort: NOOP };
   }
-  return Promise.reject(err);
+  return Promise.reject(error);
 }
 
 export function normalizeArguments(params, options, callback) {
