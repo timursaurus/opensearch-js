@@ -1,8 +1,6 @@
 import { URL } from 'node:url';
 import { OpenSearchAPI } from './src/api';
 
-// import {  } from './src/transport'
-
 import { version } from './package.json';
 import { ClientOptions, extendsCallback, NodeOptions } from './src/types';
 import { ConfigurationError } from './src/errors';
