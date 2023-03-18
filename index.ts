@@ -6,6 +6,7 @@ import { ClientOptions, extendsCallback, NodeOptions } from './src/types';
 import { ConfigurationError } from './src/errors';
 import { EventEmitter } from 'node:events'
 import * as RequestParams from './src/types/params';
+import { Helpers, Serializer } from './src/transport';
 
 const kInitialOptions = Symbol('opensearchjs-initial-options');
 const kChild = Symbol('opensearchjs-child');
@@ -13,6 +14,9 @@ const kExtensions = Symbol('opensearchjs-extensions');
 const kEventEmitter = Symbol('opensearchjs-event-emitter');
 
 export class Client extends OpenSearchAPI {
+  static serializer = Serializer
+  static helpers = Helpers
+
   constructor(opts: ClientOptions = {}) {
     super({ ConfigurationError });
     if (opts.cloud && opts[kChild] === undefined) {
