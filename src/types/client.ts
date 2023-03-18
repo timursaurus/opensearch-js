@@ -2,6 +2,8 @@ import { agentFn, AgentOptions } from "./connection";
 import { BasicAuth } from "./pool";
 import { Serializer, Transport } from '#transport'
 import { Context, generateRequestIdFn, MemoryCircuitBreakerOptions, nodeFilterFn, nodeSelectorFn } from "./transport";
+import Connection from "../transport/Connection";
+import { ConnectionOptions as TlsConnectionOptions } from 'node:tls';
 
 
 export type extendsCallback = (options: ClientExtendsCallbackOptions) => any;

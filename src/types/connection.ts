@@ -27,6 +27,7 @@ export interface ConnectionRoles {
   master?: boolean
   data?: boolean
   ingest?: boolean
+  [key: string]: boolean | undefined
 }
 
 export interface RequestOptions extends http.ClientRequestArgs {

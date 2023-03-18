@@ -39,7 +39,7 @@ import type {
   RequestEvent,
 } from './transport';
 
-import { Helpers, Serializer } from '#transport';
+import { Helpers, Serializer, Transport } from '#transport';
 import { ResurrectEvent } from './pool';
 
 /**

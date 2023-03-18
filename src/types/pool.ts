@@ -29,12 +29,13 @@
 
 import type { URL } from 'node:url';
 import type { SecureContextOptions } from 'node:tls';
-import Connection, { type AgentOptions } from '../Connection';
+// import { type AgentOptions } from '#transport';
 import type { nodeFilterFn, nodeSelectorFn } from './transport';
+import { Connection } from '../transport';
 
 export interface BaseConnectionPoolOptions {
   ssl?: SecureContextOptions;
-  agent?: AgentOptions;
+  agent?: AgentOptions | false
   proxy?: string | URL;
   auth?: BasicAuth;
   emit: (event: string | symbol, ...args: any[]) => boolean;
