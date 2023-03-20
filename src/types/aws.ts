@@ -10,7 +10,7 @@
 
 import type * as http from 'node:http'
 import type { Credentials } from '@aws-sdk/types';
-import { Transport } from '#transport'
+import { Connection, Transport } from '#transport'
 
 export interface AwsSigv4SignerOptions {
   getCredentials?: () => Promise<Credentials>;

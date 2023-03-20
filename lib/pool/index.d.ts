@@ -43,13 +43,13 @@ interface BaseConnectionPoolOptions {
   Connection: typeof Connection;
 }
 
-interface ConnectionPoolOptions extends BaseConnectionPoolOptions {
+export interface ConnectionPoolOptions extends BaseConnectionPoolOptions {
   pingTimeout?: number;
   resurrectStrategy?: 'ping' | 'optimistic' | 'none';
   sniffEnabled?: boolean;
 }
 
-interface getConnectionOptions {
+export interface getConnectionOptions {
   filter?: nodeFilterFn;
   selector?: nodeSelectorFn;
   requestId?: string | number;

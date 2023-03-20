@@ -103,7 +103,7 @@ export class Serializer {
       const key = keys[i];
       // OpenSearch will complain about keys without a value
       if (object[key] === undefined) {
-        delete object[key];
+        object[key] = undefined;
       } else if (Array.isArray(object[key])) {
         object[key] = (object[key] as string[]).join(',');
       }
@@ -113,3 +113,4 @@ export class Serializer {
 }
 
 export default Serializer;
+

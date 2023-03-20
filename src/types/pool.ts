@@ -48,12 +48,12 @@ export interface ConnectionPoolOptions extends BaseConnectionPoolOptions {
   sniffEnabled?: boolean;
 }
 
-export interface getConnectionOptions {
+export interface GetConnectionOptions {
   filter?: nodeFilterFn;
   selector?: nodeSelectorFn;
-  requestId?: string | number;
-  name?: string;
-  now?: number;
+  requestId: string | number;
+  name: string;
+  now: number;
 }
 
 export interface BasicAuth {
@@ -61,9 +61,9 @@ export interface BasicAuth {
   password: string;
 }
 
-export interface resurrectOptions {
+export interface ResurrectOptions {
   now?: number;
-  requestId: string;
+  requestId: string | number;
   name: string;
 }
 

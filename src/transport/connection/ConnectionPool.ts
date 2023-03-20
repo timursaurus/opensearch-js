@@ -28,20 +28,14 @@
  */
 
 import { BaseConnectionPool } from './BaseConnectionPool';
-import {  } from '#transport'
 import assert from 'node:assert';
 import { NOOP } from '@/utils';
 import Debug from 'debug';
+import { ConnectionPoolOptions, GetConnectionOptions, ResurrectOptions } from '@/types/pool';
+import { Connection } from '#transport';
 const debug = Debug('opensearch');
 
-const Connection = require('../Connection');
-
 export class ConnectionPool extends BaseConnectionPool {
-  static resurrectStrategies: {
-    none: number;
-    ping: number;
-    optimistic: number;
-  }
   dead: string[];
   _sniffEnabled: boolean;
   resurrectTimeout: number;
@@ -49,7 +43,7 @@ export class ConnectionPool extends BaseConnectionPool {
   pingTimeout: number;
   resurrectStrategy: number;
 
-  constructor(opts) {
+  constructor(opts: ConnectionPoolOptions) {
     super(opts);
 
     this.dead = [];
@@ -58,8 +52,8 @@ export class ConnectionPool extends BaseConnectionPool {
     // number of consecutive failures after which
     // the timeout doesn't increase
     this.resurrectTimeoutCutoff = 5;
-    this.pingTimeout = opts.pingTimeout;
-    this._sniffEnabled = opts.sniffEnabled || false;
+    this.pingTimeout = opts.pingTimeout ?? 3000;
+    this._sniffEnabled = opts?.sniffEnabled || false;
 
     const resurrectStrategy = opts.resurrectStrategy || 'ping';
     this.resurrectStrategy = ConnectionPool.resurrectStrategies[resurrectStrategy];
@@ -125,8 +119,8 @@ export class ConnectionPool extends BaseConnectionPool {
     // sort the dead list in ascending order
     // based on the resurrectTimeout
     this.dead.sort((a, b) => {
-      const conn1 = this.connections.find((c) => c.id === a);
-      const conn2 = this.connections.find((c) => c.id === b);
+      const conn1 = this.connections.find((c) => c.id === a) as Connection;
+      const conn2 = this.connections.find((c) => c.id === b) as Connection;
       return conn1.resurrectTimeout - conn2.resurrectTimeout;
     });
 
@@ -140,7 +134,11 @@ export class ConnectionPool extends BaseConnectionPool {
    * @param {object} { now, requestId }
    * @param {function} callback (isAlive, connection)
    */
-  resurrect(opts, callback = NOOP) {
+
+  resurrect(
+    opts: ResurrectOptions,
+    callback: (isAlive: boolean | null, connection: Connection | null) => void = NOOP
+  ) {
     if (this.resurrectStrategy === 0 || this.dead.length === 0) {
       debug('Nothing to resurrect');
       callback(null, null);
@@ -149,7 +147,7 @@ export class ConnectionPool extends BaseConnectionPool {
 
     // the dead list is sorted in ascending order based on the timeout
     // so the first element will always be the one with the smaller timeout
-    const connection = this.connections.find((c) => c.id === this.dead[0]);
+    const connection = this.connections.find((c) => c.id === this.dead[0]) as Connection;
     if ((opts.now || Date.now()) < connection.resurrectTimeout) {
       debug('Nothing to resurrect');
       callback(null, null);
@@ -213,9 +211,9 @@ export class ConnectionPool extends BaseConnectionPool {
    * @param {object} options (filter and selector)
    * @returns {object|null} connection
    */
-  getConnection(opts = {}) {
-    const filter = opts.filter || (() => true);
-    const selector = opts.selector || ((c) => c[0]);
+  getConnection(opts: GetConnectionOptions): Connection | null {
+    const filter = opts.filter != null ? opts.filter : () => true;
+    const selector = opts.selector != null ? opts.selector : (conn: Connection[]) => conn[0];
 
     this.resurrect({
       now: opts.now,
@@ -246,7 +244,7 @@ export class ConnectionPool extends BaseConnectionPool {
    *
    * @returns {ConnectionPool}
    */
-  empty(callback) {
+  async empty(callback = NOOP): Promise<void> {
     super.empty(() => {
       this.dead = [];
       callback();
@@ -259,7 +257,7 @@ export class ConnectionPool extends BaseConnectionPool {
    * @param {array} array of connections
    * @returns {ConnectionPool}
    */
-  update(connections) {
+  update(connections: Connection[]) {
     super.update(connections);
     this.dead = [];
     return this;

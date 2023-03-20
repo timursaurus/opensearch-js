@@ -24,9 +24,11 @@
     "paths": {
       "#/*": ["./*"],
       "@/*": ["src/*"],
+      "#internal/*": ["src/api/internal/*"],
       "#internal": ["src/api/internal"],
+      "#transport/*": ["src/transport/*"],
       "#transport": ["src/transport"],
-      "#types": ["src/types"],
+      "#types": ["src/types/*"]
     }
   },
   "include": ["src/**/*.ts"],

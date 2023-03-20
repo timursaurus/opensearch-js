@@ -38,6 +38,20 @@ export function handleError(err: symbol, callback: Function) {
   return Promise.reject(err);
 }
 
+export function snakeCaseKeys(
+  acceptedQuerystring: string[],
+  snakeCase: Record<string, string>,
+  querystring: Record<string, string>
+) {
+  const target = {};
+  const keys = Object.keys(querystring);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const key = keys[i];
+    target[snakeCase[key] || key] = querystring[key];
+  }
+  return target;
+}
+
 export function normalizeArguments(params, options, callback) {
   if (typeof options === 'function') {
     callback = options;
@@ -51,5 +65,4 @@ export function normalizeArguments(params, options, callback) {
   return [params, options, callback];
 }
 
-export function NOOP (): void {};
-
+export function NOOP(): void {}

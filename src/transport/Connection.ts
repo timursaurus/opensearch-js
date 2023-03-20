@@ -32,7 +32,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { pipeline } from 'node:stream';
 import { inspect } from 'node:util';
-import { ConnectionOptions as TlsConnectionOptions } from 'node:tls';
+import type { ConnectionOptions as TlsConnectionOptions } from 'node:tls';
 
 import hpagent from 'hpagent';
 import Debug from 'debug';

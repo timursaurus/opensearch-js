@@ -33,7 +33,9 @@ import type { SecureContextOptions } from 'node:tls';
 import { NOOP } from '@/utils';
 import { BaseConnectionPoolOptions, BasicAuth } from '@/types/pool';
 import { AgentOptions } from '@/types/connection';
+import Debug from 'debug'
 import { Connection } from '#transport';
+const debug = Debug('opensearch:connection-pool')
 
 // export class BaseConnectionPool {
 //   connections: Connection[];
@@ -73,8 +75,8 @@ export class BaseConnectionPool {
     this.size = this.connections.length;
     this.Connection = opts.Connection;
     this.emit = opts.emit || NOOP;
-    this.auth = opts.auth
-    this._ssl = opts.ssl
+    this.auth = opts.auth || null;
+    this._ssl = opts.ssl || null;
     this._agent = opts.agent;
     this._proxy = opts.proxy || null;
   }
@@ -169,7 +171,7 @@ export class BaseConnectionPool {
    *
    * @returns {ConnectionPool}
    */
-  empty(callback) {
+  empty(callback = NOOP) {
     debug('Emptying the connection pool');
     let openConnections = this.size;
     this.connections.forEach((connection) => {
@@ -189,7 +191,7 @@ export class BaseConnectionPool {
    * @param {array} array of connections
    * @returns {ConnectionPool}
    */
-  update(nodes) {
+  update(nodes: Connection[]) {
     debug('Updating the connection pool');
     const newConnections = [];
     const oldConnections = [];
@@ -240,7 +242,7 @@ export class BaseConnectionPool {
    * @param {object} nodes
    * @returns {array} hosts
    */
-  nodesToHost(nodes, protocol) {
+  nodesToHost(nodes: Connection[], protocol) {
     const ids = Object.keys(nodes);
     const hosts = [];
 

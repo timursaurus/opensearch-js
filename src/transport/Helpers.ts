@@ -71,7 +71,7 @@ import { Client } from '#/index'
 
 export class Helpers {
   [kClient]: Client;
-  [kMetaHeader]: string;
+  [kMetaHeader]: string | null;
   maxRetries: number;
   constructor(opts: HelpersOptions) {
     this[kClient] = opts.client;

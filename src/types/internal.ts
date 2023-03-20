@@ -563,6 +563,7 @@ export interface MsearchRequest extends RequestBase {
   search_type?: SearchType;
   rest_total_hits_as_int?: boolean;
   typed_keys?: boolean;
+  method: 'GET' | 'POST';
   body?: (MsearchHeader | MsearchBody)[];
 }
 

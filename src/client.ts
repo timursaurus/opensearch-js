@@ -1,12 +1,43 @@
-import { URL } from 'node:url';
-import { OpenSearchAPI } from './src/api';
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ *
+ */
 
-import { version } from './package.json';
-import { ClientOptions, extendsCallback, NodeOptions } from './src/types';
-import { ConfigurationError } from './src/errors';
-import { EventEmitter } from 'node:events'
-import * as RequestParams from './src/types/params';
-import { Helpers, Serializer } from './src/transport';
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import OpenSearchAPI from '@/api';
+import { ConfigurationError } from '@/errors';
+import { Connection, Helpers, Serializer, Transport } from '#transport';
+import { ClientOptions, NodeOptions } from '@/types';
+import Debug from 'debug';
+const debug = Debug('opensearch:client');
+
+import { URL } from 'node:url';
+import { EventEmitter } from 'node:events';
+import { BaseConnectionPool } from './transport/connection';
+// import { BaseConnectionPool } from './transport/';
 
 const kInitialOptions = Symbol('opensearchjs-initial-options');
 const kChild = Symbol('opensearchjs-child');
@@ -14,9 +45,9 @@ const kExtensions = Symbol('opensearchjs-extensions');
 const kEventEmitter = Symbol('opensearchjs-event-emitter');
 
 export class Client extends OpenSearchAPI {
-
-  static serializer: Serializer
-  static helpers: Helpers
+  static serializer: Serializer;
+  static helpers: Helpers;
+  static connectionPool: BaseConnectionPool;
 
   constructor(opts: ClientOptions = {}) {
     super({ ConfigurationError });
@@ -158,9 +189,7 @@ export class Client extends OpenSearchAPI {
       client: this,
       maxRetries: options.maxRetries,
     });
-
   }
-
 
   get emit() {
     return this[kEventEmitter].emit.bind(this[kEventEmitter]);
@@ -178,7 +207,7 @@ export class Client extends OpenSearchAPI {
     return this[kEventEmitter].off.bind(this[kEventEmitter]);
   }
 
-  extend(name: string, fn: extendsCallback): void
+  extend(name: string, fn: extendsCallback): void;
   extend(name: string, opts: { force: boolean }, fn: extendsCallback): void {
     if (typeof opts === 'function') {
       fn = opts;
@@ -248,7 +277,7 @@ export class Client extends OpenSearchAPI {
     return client;
   }
 
-  close(callback) {
+  close(callback: Function): void {
     if (callback == null) {
       return new Promise((resolve) => {
         this.close(resolve);
@@ -257,7 +286,6 @@ export class Client extends OpenSearchAPI {
     debug('Closing the client');
     this.connectionPool.empty(callback);
   }
-
 }
 
 function getAuth(node: string | string[] | NodeOptions | NodeOptions[]) {
@@ -294,12 +322,3 @@ function getAuth(node: string | string[] | NodeOptions | NodeOptions[]) {
     }
   }
 }
-
-export const events = {
-  RESPONSE: 'response',
-  REQUEST: 'request',
-  SNIFF: 'sniff',
-  RESURRECT: 'resurrect',
-  SERIALIZATION: 'serialization',
-  DESERIALIZATION: 'deserialization',
-} as const;

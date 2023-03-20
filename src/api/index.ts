@@ -28,6 +28,7 @@
  */
 
 import { kConfigurationError } from "@/utils";
+import { ClientOptions } from "@/types";
 
 const kCat = Symbol('Cat');
 const kCluster = Symbol('Cluster');
@@ -68,6 +69,11 @@ export class OpenSearchAPI {
     // TODO: FIX. No configuration error on ClientOptions. It's in root index.ts
     this[kConfigurationError] = null;
   }
+
+  msearch() {
+
+  }
+
   // get<TResponse = Record<string, any>, TContext = Context>(
   //   params?: RequestParams.SnapshotGet,
   //   options?: TransportRequestOptions
