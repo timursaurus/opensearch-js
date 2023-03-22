@@ -38,7 +38,12 @@ import hpagent from 'hpagent';
 import Debug from 'debug';
 
 import { ConnectionError, RequestAbortedError, TimeoutError, ConfigurationError } from '@/errors';
-import { ConnectionOptions, ConnectionRoles, RequestOptions } from '@/types/connection';
+import {
+  ConnectionOptions,
+  ConnectionRequestParams,
+  ConnectionRoles,
+  RequestOptions,
+} from '@/types/connection';
 import { NOOP } from '@/utils';
 import { BasicAuth } from '@/types/pool';
 
@@ -124,7 +129,7 @@ export class Connection {
   request(
     params: RequestOptions,
     callback: (err: Error | null, response: http.IncomingMessage | null) => void
-  ): http.ClientRequest {
+  ) {
     this._openRequests++;
     let cleanedListeners = false;
 
@@ -139,33 +144,33 @@ export class Connection {
     debug('Starting a new request', params);
     const request = this.makeRequest(requestParams);
 
-    const onResponse = (response) => {
+    function onResponse(response: http.IncomingMessage) {
       cleanListeners();
       this._openRequests--;
       callback(null, response);
-    };
+    }
 
-    const onTimeout = () => {
+    function onTimeout() {
       cleanListeners();
       this._openRequests--;
       request.once('error', () => {}); // we need to catch the request aborted error
       request.abort();
       callback(new TimeoutError('Request timed out', params), null);
-    };
+    }
 
-    const onError = (err: Error) => {
+    function onError(err: Error) {
       cleanListeners();
       this._openRequests--;
       callback(new ConnectionError(err.message), null);
-    };
+    }
 
-    const onAbort = () => {
+    function onAbort() {
       cleanListeners();
       request.once('error', () => {}); // we need to catch the request aborted error
       debug('Request aborted', params);
       this._openRequests--;
       callback(new RequestAbortedError('Request aborted'), null);
-    };
+    }
 
     request.on('response', onResponse);
     request.on('timeout', onTimeout);
@@ -234,7 +239,7 @@ export class Connection {
     this._status = status;
   }
 
-  buildRequestObject(params) {
+  buildRequestObject(params: ConnectionRequestParams) {
     const url = this.url;
     const request = {
       protocol: url.protocol,
@@ -265,6 +270,7 @@ export class Connection {
       } else if (key === 'headers') {
         request.headers = Object.assign({}, request.headers, params.headers);
       } else {
+        // @ts-expect-error
         request[key] = params[key];
       }
     }
@@ -323,7 +329,7 @@ export function stripAuth(url: string) {
   return url.slice(0, url.indexOf('//') + 2) + url.slice(url.indexOf('@') + 1);
 }
 
-export function isStream(obj): boolean {
+export  function isStream(obj: any): obj is ReadableStream {
   return obj != null && typeof obj.pipe === 'function';
 }
 
@@ -340,7 +346,7 @@ export function resolve(host: string, path: string) {
   }
 }
 
-export function prepareHeaders(headers: Record<string, string> = {}, auth: BasicAuth) {
+export function prepareHeaders(headers: Record<string, string> = {}, auth?: BasicAuth) {
   if (auth != null && headers.authorization == null) {
     /* istanbul ignore else */
     if (auth.username && auth.password) {
