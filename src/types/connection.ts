@@ -30,6 +30,14 @@ export interface ConnectionRoles {
   [key: string]: boolean | undefined
 }
 
+export interface ConnectionRequestParams {
+  method: string;
+  path: string;
+  querystring?: string;
+  headers?: http.IncomingHttpHeaders
+  body?: string | Buffer | ReadableStream | null;
+}
+
 export interface RequestOptions extends http.ClientRequestArgs {
   asStream?: boolean;
   body?: string | Buffer | ReadableStream | null;
