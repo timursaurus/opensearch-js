@@ -25,9 +25,9 @@
       "#/*": ["./*"],
       "@/*": ["src/*"],
       "#internal/*": ["src/api/internal/*"],
-      "#internal": ["src/api/internal"],
+      "#internal": ["src/api/internal/index"],
       "#transport/*": ["src/transport/*"],
-      "#transport": ["src/transport"],
+      "#transport": ["src/transport/index"],
       "#types": ["src/types/*"]
     }
   },
