@@ -38,7 +38,28 @@ export function handleError(error: symbol, callback: Function) {
   return Promise.reject(error);
 }
 
-export function normalizeArguments(params, options, callback) {
+export function snakeCaseKeys(
+  acceptedQuerystring: string[],
+  snakeCase: Record<string, string>,
+  querystring: Record<string, any>
+) {
+  const target: Record<string, string> = {};
+  const keys = Object.keys(querystring);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const key = keys[i];
+    // if (!acceptedQuerystring.includes(key)) {
+    //   throw new Error(`The querystring key ${key} is not accepted.`);
+    // }
+    target[snakeCase[key] || key] = querystring[key];
+  }
+  return target;
+}
+
+export function normalizeArguments(
+  params: Record<string, unknown>,
+  options: Record<string, unknown>,
+  callback: Function
+) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -51,5 +72,4 @@ export function normalizeArguments(params, options, callback) {
   return [params, options, callback];
 }
 
-export function NOOP (): void {};
-
+export function NOOP(): void {}
