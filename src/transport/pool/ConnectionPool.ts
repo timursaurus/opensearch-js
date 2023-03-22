@@ -53,8 +53,7 @@ export class ConnectionPool extends BaseConnectionPool {
     // the timeout doesn't increase
     this.resurrectTimeoutCutoff = 5;
     this.pingTimeout = opts.pingTimeout ?? 3000;
-    this._sniffEnabled = opts?.sniffEnabled || false;
-
+    this._sniffEnabled = opts?.sniffEnabled ?? false;
     const resurrectStrategy = opts.resurrectStrategy || 'ping';
     this.resurrectStrategy = ConnectionPool.resurrectStrategies[resurrectStrategy];
     assert(this.resurrectStrategy != null, `Invalid resurrection strategy: '${resurrectStrategy}'`);

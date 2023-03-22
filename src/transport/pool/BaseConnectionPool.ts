@@ -31,10 +31,11 @@ import { URL } from 'node:url';
 import type { SecureContextOptions } from 'node:tls';
 
 import { NOOP } from '@/utils';
-import { BaseConnectionPoolOptions, BasicAuth } from '@/types/pool';
+import { BaseConnectionPoolOptions, BasicAuth, GetConnectionOptions } from '@/types/pool';
 import { AgentOptions } from '@/types/connection';
 import Debug from 'debug'
 import { Connection } from '#transport';
+import { ConfigurationError } from '#/src/errors';
 const debug = Debug('opensearch:connection-pool')
 
 // export class BaseConnectionPool {
@@ -81,8 +82,8 @@ export class BaseConnectionPool {
     this._proxy = opts.proxy || null;
   }
 
-  getConnection() {
-    throw new Error('getConnection must be implemented');
+  getConnection(opts: GetConnectionOptions): Connection | null {
+    throw new ConfigurationError('getConnection must be implemented');
   }
 
   markAlive(connection: Connection): this {

@@ -31,6 +31,7 @@ import { NOOP } from '@/utils';
 import { BaseConnectionPoolOptions } from '@/types/pool';
 import { Connection } from '#transport';
 import BaseConnectionPool from './BaseConnectionPool';
+
 export class CloudConnectionPool extends BaseConnectionPool {
   cloudConnection: Connection | null;
   constructor(opts: BaseConnectionPoolOptions) {
