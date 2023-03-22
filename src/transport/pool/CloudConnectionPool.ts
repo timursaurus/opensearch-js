@@ -27,10 +27,9 @@
  * under the License.
  */
 
-import { NOOP } from '@/utils';
+import { Connection, BaseConnectionPool } from '#transport';
 import { BaseConnectionPoolOptions } from '@/types/pool';
-import { Connection } from '#transport';
-import BaseConnectionPool from './BaseConnectionPool';
+import { NOOP } from '@/utils';
 
 export class CloudConnectionPool extends BaseConnectionPool {
   cloudConnection: Connection | null;
@@ -41,8 +40,7 @@ export class CloudConnectionPool extends BaseConnectionPool {
 
   /**
    * Returns the only cloud connection.
-   *
-   * @returns {object} connection
+   * @returns { Connection } connection
    */
   getConnection(): Connection | null {
     return this.cloudConnection;
@@ -50,10 +48,8 @@ export class CloudConnectionPool extends BaseConnectionPool {
 
   /**
    * Empties the connection pool.
-   *
-   * @returns {ConnectionPool}
    */
-  empty(callback = NOOP) {
+  empty(callback = NOOP): void {
     super.empty(() => {
       this.cloudConnection = null;
       callback();
@@ -62,11 +58,10 @@ export class CloudConnectionPool extends BaseConnectionPool {
 
   /**
    * Update the ConnectionPool with new connections.
-   *
-   * @param {array} array of connections
-   * @returns {ConnectionPool}
+   * @param connections array of connections
+   * @returns { CloudConnectionPool } this
    */
-  update(connections: Connection[]) {
+  update(connections: Connection[]): this {
     super.update(connections);
     this.cloudConnection = this.connections[0];
     return this;
