@@ -30,9 +30,7 @@
 import { Readable as ReadableStream } from 'node:stream';
 // import Connection from './Connection';
 import * as errors from '@/errors'
-
-// import { CloudConnectionPool, ConnectionPool } from './pool';
-// import Serializer from './Serializer';
+import { CloudConnectionPool, Connection, ConnectionPool, Serializer } from '#transport';
 
 export type ApiError =
   | errors.ConfigurationError
