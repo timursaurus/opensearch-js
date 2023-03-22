@@ -155,7 +155,7 @@ export class Connection {
       this._openRequests--;
       request.once('error', () => {}); // we need to catch the request aborted error
       request.abort();
-      callback(new TimeoutError('Request timed out', params), null);
+      callback(new TimeoutError('Request timed out'), null);
     }
 
     function onError(err: Error) {

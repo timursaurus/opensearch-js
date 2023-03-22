@@ -44,8 +44,8 @@ export class TimeoutError<
 > extends OpenSearchClientError {
   name: string;
   message: string;
-  meta: ApiResponse<TResponse, TContext>;
-  constructor(message: string, meta: ApiResponse<TResponse, TContext>) {
+  meta?: ApiResponse<TResponse, TContext>;
+  constructor(message: string, meta?: ApiResponse<TResponse, TContext>) {
     super(message);
     Error.captureStackTrace(this, TimeoutError);
     this.name = 'TimeoutError';
@@ -60,8 +60,8 @@ export class ConnectionError<
 > extends OpenSearchClientError {
   name: string;
   message: string;
-  meta: ApiResponse<TResponse, TContext>;
-  constructor(message: string, meta: ApiResponse<TResponse, TContext>) {
+  meta?: ApiResponse<TResponse, TContext>;
+  constructor(message: string, meta?: ApiResponse<TResponse, TContext>) {
     super(message);
     Error.captureStackTrace(this, ConnectionError);
     this.name = 'ConnectionError';
@@ -177,8 +177,8 @@ export class RequestAbortedError<
 > extends OpenSearchClientError {
   name: string;
   message: string;
-  meta: ApiResponse<TResponse, TContext>;
-  constructor(message: string, meta: ApiResponse<TResponse, TContext>) {
+  meta?: ApiResponse<TResponse, TContext>;
+  constructor(message: string, meta?: ApiResponse<TResponse, TContext>) {
     super(message);
     Error.captureStackTrace(this, RequestAbortedError);
     this.name = 'RequestAbortedError';
