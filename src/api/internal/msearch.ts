@@ -31,7 +31,7 @@
 import { callbackFn } from '#/src/types/helpers';
 import { MsearchRequest, MsearchResponse } from '#/src/types/internal';
 import { TransportRequestCallback, TransportRequestOptions } from '#/src/types/transport';
-import { normalizeArguments, handleError, kConfigurationError  } from '@/utils'
+import { normalizeArguments, handleError, kConfigurationError, snakeCaseKeys } from '@/utils';
 
 const acceptedQuerystring = [
   'search_type',
@@ -99,9 +99,12 @@ const snakeCase = {
 //  * @returns {{abort: function(), then: function(), catch: function()}|Promise<never>|*} {@link https://opensearch.org/docs/latest/api-reference/multi-search/#response Multi-search Response}
 //  */
 
-
 // export function msearchApi<TDocument = unknown, TContext = unknown>(params: MsearchRequest, options?: TransportRequestOptions): Promise<MsearchResponse<TDocument>>;
-export function msearchApi<TDocument = unknown, TContext = unknown>(params: MsearchRequest, options: TransportRequestOptions, callback: callbackFn<MsearchResponse<TDocument>, TContext>): TransportRequestCallback {
+export function msearchApi<TDocument = unknown, TContext = unknown>(
+  params: MsearchRequest,
+  options: TransportRequestOptions,
+  callback: callbackFn<MsearchResponse<TDocument>, TContext>
+): TransportRequestCallback {
   [params, options, callback] = normalizeArguments(params, options, callback);
 
   // check required parameters
@@ -118,16 +121,16 @@ export function msearchApi<TDocument = unknown, TContext = unknown>(params: Msea
 
   let { method, body, index, type, ...querystring } = params;
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring);
-  
+
   let path = '';
   if (index != null && type != null) {
     if (method == null) method = body == null ? 'GET' : 'POST';
-    path = `/${encodeURIComponent(index)}/${encodeURIComponent(type)}/_msearch`;
+
+    path = `/${encodeURIComponent(index.toString())}/${encodeURIComponent(type)}/_msearch`;
   } else if (index != null) {
     if (method == null) method = body == null ? 'GET' : 'POST';
-    if (!Array.isArray(index)) {
-      path = `/${encodeURIComponent(index)}/_msearch`;
-    }
+
+    path = `/${encodeURIComponent(index.toString())}/_msearch`;
   } else {
     if (method == null) method = body == null ? 'GET' : 'POST';
     path = '/' + '_msearch';

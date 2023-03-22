@@ -44,6 +44,7 @@ import {
   ApiError,
   ApiResponse,
   MemoryCircuitBreakerOptions,
+  RequestBody,
   TransportGetConnectionOptions,
   TransportOptions,
   TransportRequestOptions,
@@ -122,6 +123,8 @@ export class Transport {
   _sniffEnabled: boolean;
   _nextSniff: number;
   _isSniffing: boolean;
+  context: Record<string, any> | null;
+  headers: Record<string, string>;
 
   constructor(opts: TransportOptions) {
     if (typeof opts.compression === 'string' && opts.compression !== 'gzip') {
@@ -139,7 +142,7 @@ export class Transport {
       {},
       { 'user-agent': userAgent },
       opts.suggestCompression === true ? { 'accept-encoding': 'gzip,deflate' } : null,
-      lowerCaseHeaders(opts.headers)
+      lowerCaseHeaders(opts.headers!)
     );
     this.sniffInterval = opts.sniffInterval
     this.sniffOnConnectionFault = opts.sniffOnConnectionFault;
@@ -218,8 +221,7 @@ export class Transport {
       callback = options;
       options = {};
     }
-    let p = null;
-
+    let p: Promise<ApiResponse>;
     // promises support
     if (callback === undefined) {
       let onFulfilled = null;
@@ -734,7 +736,7 @@ export function toMs(time: string | number): number {
   return time;
 }
 
-function shouldSerialize(obj): boolean {
+export function shouldSerialize(obj: RequestBody): boolean {
   return (
     typeof obj !== 'string' && typeof obj.pipe !== 'function' && Buffer.isBuffer(obj) === false
   );
