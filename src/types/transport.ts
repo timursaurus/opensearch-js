@@ -83,6 +83,7 @@ export interface TransportOptions {
   name?: string;
   opaqueIdPrefix?: string;
   memoryCircuitBreaker?: MemoryCircuitBreakerOptions;
+  context: Record<string, any> | null
 }
 
 export interface RequestEvent<TResponse = Record<string, any>, TContext = Context> {
