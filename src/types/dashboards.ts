@@ -29,7 +29,7 @@
 
 import type * as errors from '@/errors';
 import type * as T from '@/types/internal';
-import type { ClientOptions } from './client';
+import type { ClientOptions } from '@/types/client';
 import type {
   ApiError,
   ApiResponse,
@@ -37,10 +37,10 @@ import type {
   TransportRequestParams,
   TransportRequestOptions,
   RequestEvent,
-} from './transport';
+} from '@/types/transport';
 
-import { Helpers, Serializer, Transport } from '#transport';
-import { ResurrectEvent } from './pool';
+import { ConnectionPool, Helpers, Serializer, Transport } from '#transport';
+import { ResurrectEvent } from '@/types/pool';
 
 /**
  * We are still working on this type, it will arrive soon.
