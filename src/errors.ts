@@ -8,8 +8,6 @@
  *
  */
 
-import { ApiResponse, Context } from '@/types/transport';
-
 /*
  * Licensed to Elasticsearch B.V. under one or more contributor
  * license agreements. See the NOTICE file distributed with
@@ -29,83 +27,8 @@ import { ApiResponse, Context } from '@/types/transport';
  * under the License.
  */
 
-// export declare class OpenSearchClientError extends Error {
-//   name: string;
-//   message: string;
-// }
-
-// export declare class TimeoutError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(message: string, meta: ApiResponse);
-// }
-
-// export declare class ConnectionError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(message: string, meta: ApiResponse);
-// }
-
-// export declare class SerializationError extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   data: any;
-//   constructor(message: string, data: any);
-// }
-
-// export declare class DeserializationError extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   data: string;
-//   constructor(message: string, data: string);
-// }
-
-// export declare class ConfigurationError extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   constructor(message: string);
-// }
-
-// export declare class ResponseError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   body: TResponse;
-//   statusCode: number;
-//   headers: Record<string, any>;
-//   constructor(meta: ApiResponse);
-// }
-
-// export declare class RequestAbortedError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(message: string, meta: ApiResponse);
-// }
-
-// export declare class NotCompatibleError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(meta: ApiResponse);
-// }
+import { ApiResponse, Context } from '@/types/transport';
+import { ErrorCause, ErrorResponseBase } from '@/types/internal';
 
 export class OpenSearchClientError extends Error {
   name: string;
@@ -115,7 +38,10 @@ export class OpenSearchClientError extends Error {
   }
 }
 
-export class TimeoutError<TResponse = Record<string, unknown>, TContext = Context> extends OpenSearchClientError {
+export class TimeoutError<
+  TResponse = Record<string, unknown>,
+  TContext = Context
+> extends OpenSearchClientError {
   name: string;
   message: string;
   meta: ApiResponse<TResponse, TContext>;
@@ -162,11 +88,12 @@ export class NoLivingConnectionsError<
     this.meta = meta;
   }
 }
+
 export class SerializationError extends OpenSearchClientError {
   name: string;
   message: string;
-  data: any;
-  constructor(message: string, data: any) {
+  data: Record<string, unknown>;
+  constructor(message: string, data: Record<string, unknown>) {
     super(message);
     Error.captureStackTrace(this, SerializationError);
     this.name = 'SerializationError';
@@ -178,8 +105,8 @@ export class SerializationError extends OpenSearchClientError {
 export class DeserializationError extends OpenSearchClientError {
   name: string;
   message: string;
-  data: any;
-  constructor(message: string, data: any) {
+  data: string;
+  constructor(message: string, data: string) {
     super(message);
     Error.captureStackTrace(this, DeserializationError);
     this.name = 'DeserializationError';
@@ -209,19 +136,18 @@ export class ResponseError<
     Error.captureStackTrace(this, ResponseError);
     this.name = 'ResponseError';
     if (meta.body?.error?.type) {
-      if (Array.isArray(meta.body.error.root_cause)) {
-        this.message =
-          `${meta.body.error.type}: ${meta.body.error.root_cause
-            .map((entry) => `[${entry.type}] Reason: ${entry.reason}`)
-            .join('; ')}`;
-        meta.body.error.root_cause;
+      const error = meta.body.error as ErrorCause;
+      if (Array.isArray(error.root_cause)) {
+        this.message = `${error.type}: ${error.root_cause
+          .map((entry) => `[${entry.type}] Reason: ${entry.reason}`)
+          .join('; ')}`;
       } else {
-        this.message = meta.body.error.type;
+        this.message = error.type;
       }
     } else {
       this.message = 'Response Error';
     }
-    this.meta = meta;
+    this.meta = meta as ApiResponse<TResponse, TContext>;
   }
 
   get body() {
@@ -229,8 +155,9 @@ export class ResponseError<
   }
 
   get statusCode() {
-    if (this.meta.body && typeof this.meta.body.status === 'number') {
-      return this.meta.body.status;
+    const body = this.meta.body as ErrorResponseBase;
+    if (typeof body === 'object' && typeof body.status === 'number') {
+      return body.status;
     }
     return this.meta.statusCode;
   }
@@ -243,26 +170,6 @@ export class ResponseError<
     return JSON.stringify(this.meta.body);
   }
 }
-
-// export declare class RequestAbortedError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(message: string, meta: ApiResponse);
-// }
-
-// export declare class NotCompatibleError<
-//   TResponse = Record<string, any>,
-//   TContext = Context
-// > extends OpenSearchClientError {
-//   name: string;
-//   message: string;
-//   meta: ApiResponse<TResponse, TContext>;
-//   constructor(meta: ApiResponse);
-// }
 
 export class RequestAbortedError<
   TResponse = Record<string, unknown>,
@@ -280,7 +187,10 @@ export class RequestAbortedError<
   }
 }
 
-export class NotCompatibleError<TResponse = Record<string, unknown>, TContext = Context> extends OpenSearchClientError {
+export class NotCompatibleError<
+  TResponse = Record<string, unknown>,
+  TContext = Context
+> extends OpenSearchClientError {
   meta: ApiResponse<TResponse, TContext>;
   constructor(meta: ApiResponse<TResponse, TContext>) {
     super('Not Compatible Error');
