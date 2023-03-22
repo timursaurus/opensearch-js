@@ -36,10 +36,11 @@ import type { ConnectionOptions as TlsConnectionOptions } from 'node:tls';
 
 import hpagent from 'hpagent';
 import Debug from 'debug';
+
 import { ConnectionError, RequestAbortedError, TimeoutError, ConfigurationError } from '@/errors';
 import { ConnectionOptions, ConnectionRoles, RequestOptions } from '@/types/connection';
-import { NOOP } from '../utils';
-import { BasicAuth } from '../types/pool';
+import { NOOP } from '@/utils';
+import { BasicAuth } from '@/types/pool';
 
 const debug = Debug('opensearch');
 const INVALID_PATH_REGEX = /[^\u0021-\u00ff]/;
@@ -132,7 +133,7 @@ export class Connection {
     if (INVALID_PATH_REGEX.test(requestParams.path) === true) {
       callback(new TypeError(`ERR_UNESCAPED_CHARACTERS: ${requestParams.path}`), null);
       /* istanbul ignore next */
-      return { abort: () => {} };
+      return { abort: NOOP };
     }
 
     debug('Starting a new request', params);
@@ -317,16 +318,16 @@ const defaultRoles = {
 const validStatuses = Object.keys(Connection.statuses).map((k) => Connection.statuses[k]);
 const validRoles = Object.keys(Connection.roles).map((k) => Connection.roles[k]);
 
-function stripAuth(url: string) {
+export function stripAuth(url: string) {
   if (url.indexOf('@') === -1) return url;
   return url.slice(0, url.indexOf('//') + 2) + url.slice(url.indexOf('@') + 1);
 }
 
-function isStream(obj): boolean {
+export function isStream(obj): boolean {
   return obj != null && typeof obj.pipe === 'function';
 }
 
-function resolve(host, path) {
+export function resolve(host: string, path: string) {
   const hostEndWithSlash = host[host.length - 1] === '/';
   const pathStartsWithSlash = path[0] === '/';
 
@@ -339,12 +340,13 @@ function resolve(host, path) {
   }
 }
 
-export function prepareHeaders(headers = {}, auth: BasicAuth) {
+export function prepareHeaders(headers: Record<string, string> = {}, auth: BasicAuth) {
   if (auth != null && headers.authorization == null) {
     /* istanbul ignore else */
     if (auth.username && auth.password) {
-      headers.authorization =
-        `Basic ${Buffer.from(`${auth.username}:${auth.password}`).toString('base64')}`;
+      headers.authorization = `Basic ${Buffer.from(`${auth.username}:${auth.password}`).toString(
+        'base64'
+      )}`;
     }
   }
   return headers;
