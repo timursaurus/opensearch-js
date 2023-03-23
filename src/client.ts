@@ -29,19 +29,15 @@
 
 import OpenSearchAPI from '@/api';
 import { ConfigurationError } from '@/errors';
-import { Connection, Helpers, Serializer, Transport, BaseConnectionPool } from '#transport';
-import { ClientOptions, NodeOptions } from '@/types';
+import { Connection, Helpers, Serializer, Transport, BaseConnectionPool, CloudConnectionPool, ConnectionPool, prepareHeaders } from '#transport';
+import { ClientOptions, extendsCallback, NodeOptions } from '@/types';
 import Debug from 'debug';
 const debug = Debug('opensearch:client');
 
 import { URL } from 'node:url';
 import { EventEmitter } from 'node:events';
+import { kChild, kInitialOptions, kExtensions, kEventEmitter } from '@/symbols';
 
-
-const kInitialOptions = Symbol('opensearchjs-initial-options');
-const kChild = Symbol('opensearchjs-child');
-const kExtensions = Symbol('opensearchjs-extensions');
-const kEventEmitter = Symbol('opensearchjs-event-emitter');
 
 export class Client extends OpenSearchAPI {
   serializer: Serializer;
