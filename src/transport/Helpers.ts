@@ -32,9 +32,15 @@ import { promisify } from 'node:util';
 
 import { ResponseError, ConfigurationError } from '@/errors';
 import { NOOP } from '@/utils';
-import { RequestBody, TransportRequestOptions } from '../types/transport';
-import { Search } from '../types/params';
-import { BulkHelperOptions, HelpersOptions, MsearchHelper, MsearchHelperOptions } from '../types/helpers';
+import { RequestBody, TransportRequestOptions } from '@/types/transport';
+import { Search } from '@/types/params';
+import { Client } from '@/client';
+import {
+  BulkHelperOptions,
+  HelpersOptions,
+  MsearchHelper,
+  MsearchHelperOptions,
+} from '@/types/helpers';
 
 const pImmediate = promisify(setImmediate);
 const sleep = promisify(setTimeout);
@@ -67,7 +73,7 @@ const kMetaHeader = Symbol('meta header');
 //   ): BulkHelper<BulkStats>;
 // }
 
-import { Client } from '#/index'
+
 
 export class Helpers {
   [kClient]: Client;
@@ -75,6 +81,7 @@ export class Helpers {
   maxRetries: number;
   constructor(opts: HelpersOptions) {
     this[kClient] = opts.client;
+    opts.client.child
     this[kMetaHeader] = opts.metaHeader;
     this.maxRetries = opts.maxRetries;
   }
@@ -216,7 +223,10 @@ export class Helpers {
    * @param {object} reqOptions - The client optional configuration for this request.
    * @return {object} The possible operations to run.
    */
-  msearch(options: MsearchHelperOptions = {}, reqOptions: TransportRequestOptions = {}): MsearchHelper {
+  msearch(
+    options: MsearchHelperOptions = {},
+    reqOptions: TransportRequestOptions = {}
+  ): MsearchHelper {
     const client = this[kClient];
     const {
       operations = 5,
@@ -461,9 +471,9 @@ export class Helpers {
     }
   }
   // bulk<TDocument = unknown>(
-//     options: BulkHelperOptions<TDocument>,
-//     reqOptions?: TransportRequestOptions
-//   ): BulkHelper<BulkStats>;
+  //     options: BulkHelperOptions<TDocument>,
+  //     reqOptions?: TransportRequestOptions
+  //   ): BulkHelper<BulkStats>;
   /**
    * Creates a bulk helper instance. Once you configure it, you can pick which operation
    * to execute with the given dataset, index, create, update, and delete.
@@ -471,9 +481,12 @@ export class Helpers {
    * @param {object} reqOptions - The client optional configuration for this request.
    * @return {object} The possible operations to run with the datasource.
    */
-  bulk<TDocument = unknown>(options: BulkHelperOptions<TDocument>, reqOptions?: TransportRequestOptions) {
+  bulk<TDocument = unknown>(
+    options: BulkHelperOptions<TDocument>,
+    reqOptions?: TransportRequestOptions
+  ) {
     const client = this[kClient];
-    const { serializer } =  client;
+    const { serializer } = client;
     if (this[kMetaHeader] !== null) {
       reqOptions.headers = reqOptions.headers || {};
     }

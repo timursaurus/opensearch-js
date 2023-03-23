@@ -27,45 +27,7 @@
  * under the License.
  */
 
-import { Connection, BaseConnectionPool } from '#transport';
-import { BaseConnectionPoolOptions } from '@/types/pool';
-import { NOOP } from '@/utils';
-
-export class CloudConnectionPool extends BaseConnectionPool {
-  cloudConnection: Connection | null;
-  constructor(opts: BaseConnectionPoolOptions) {
-    super(opts);
-    this.cloudConnection = null;
-  }
-
-  /**
-   * Returns the only cloud connection.
-   * @returns { Connection } connection
-   */
-  getConnection(): Connection | null {
-    return this.cloudConnection;
-  }
-
-  /**
-   * Empties the connection pool.
-   */
-  empty(callback = NOOP): void {
-    super.empty(() => {
-      this.cloudConnection = null;
-      callback();
-    });
-  }
-
-  /**
-   * Update the ConnectionPool with new connections.
-   * @param connections array of connections
-   * @returns { CloudConnectionPool } this
-   */
-  update(connections: Connection[]): this {
-    super.update(connections);
-    this.cloudConnection = this.connections[0];
-    return this;
-  }
-}
-
-export default CloudConnectionPool;
+export const kInitialOptions = Symbol('opensearchjs-initial-options');
+export const kChild = Symbol('opensearchjs-child');
+export const kExtensions = Symbol('opensearchjs-extensions');
+export const kEventEmitter = Symbol('opensearchjs-event-emitter');

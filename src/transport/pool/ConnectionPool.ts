@@ -27,12 +27,11 @@
  * under the License.
  */
 
-import { BaseConnectionPool } from './BaseConnectionPool';
 import assert from 'node:assert';
+import { BaseConnectionPool, Connection } from '#transport';
+import { ConnectionPoolOptions, GetConnectionOptions, ResurrectOptions } from '@/types/pool';
 import { NOOP } from '@/utils';
 import Debug from 'debug';
-import { ConnectionPoolOptions, GetConnectionOptions, ResurrectOptions } from '@/types/pool';
-import { Connection } from '#transport';
 const debug = Debug('opensearch');
 
 export class ConnectionPool extends BaseConnectionPool {
@@ -53,8 +52,7 @@ export class ConnectionPool extends BaseConnectionPool {
     // the timeout doesn't increase
     this.resurrectTimeoutCutoff = 5;
     this.pingTimeout = opts.pingTimeout ?? 3000;
-    this._sniffEnabled = opts?.sniffEnabled || false;
-
+    this._sniffEnabled = opts?.sniffEnabled ?? false;
     const resurrectStrategy = opts.resurrectStrategy || 'ping';
     this.resurrectStrategy = ConnectionPool.resurrectStrategies[resurrectStrategy];
     assert(this.resurrectStrategy != null, `Invalid resurrection strategy: '${resurrectStrategy}'`);
@@ -71,9 +69,10 @@ export class ConnectionPool extends BaseConnectionPool {
    * If needed removes the connection from the dead list
    * and then resets the `deadCount`.
    *
-   * @param {object} connection
+   * @param { Connection } connection
+   * @returns { ConnectionPool }
    */
-  markAlive(connection: Connection) {
+  markAlive(connection: Connection): this {
     const { id } = connection;
     debug(`Marking as 'alive' connection '${id}'`);
     const index = this.dead.indexOf(id);
@@ -89,9 +88,10 @@ export class ConnectionPool extends BaseConnectionPool {
    * If needed, adds the connection to the dead list
    * and then increments the `deadCount`.
    *
-   * @param {object} connection
+   * @param { Connection } connection
+   * @returns { ConnectionPool }
    */
-  markDead(connection: Connection) {
+  markDead(connection: Connection): this {
     const { id } = connection;
     debug(`Marking as 'dead' connection '${id}'`);
     if (this.dead.indexOf(id) === -1) {
@@ -129,10 +129,10 @@ export class ConnectionPool extends BaseConnectionPool {
 
   /**
    * If enabled, tries to resurrect a connection with the given
-   * resurrect strategy ('ping', 'optimistic', 'none').
+   * resurrect strategy (`'ping'`, `'optimistic'`, `'none'`).
    *
-   * @param {object} { now, requestId }
-   * @param {function} callback (isAlive, connection)
+   * @param {ResurrectOptions } { now: number, requestId: string | number }
+   * @param {{ isAlive: boolean, connection: Connection }} callback (isAlive: boolean, connection: Connection)
    */
 
   resurrect(
@@ -159,11 +159,7 @@ export class ConnectionPool extends BaseConnectionPool {
     // ping strategy
     if (this.resurrectStrategy === 1) {
       connection.request(
-        {
-          method: 'HEAD',
-          path: '/',
-          timeout: this.pingTimeout,
-        },
+        { method: 'HEAD', path: '/', timeout: this.pingTimeout },
         (err, response) => {
           let isAlive = true;
           const statusCode = response !== null ? response.statusCode : 0;
@@ -208,8 +204,8 @@ export class ConnectionPool extends BaseConnectionPool {
    * It uses the selector to choose which
    * connection return.
    *
-   * @param {object} options (filter and selector)
-   * @returns {object|null} connection
+   * @param { GetConnectionOptions } options (filter and selector)
+   * @returns {Connection | null} connection or null
    */
   getConnection(opts: GetConnectionOptions): Connection | null {
     const filter = opts.filter != null ? opts.filter : () => true;
@@ -242,7 +238,6 @@ export class ConnectionPool extends BaseConnectionPool {
   /**
    * Empties the connection pool.
    *
-   * @returns {ConnectionPool}
    */
   async empty(callback = NOOP): Promise<void> {
     super.empty(() => {
@@ -254,10 +249,10 @@ export class ConnectionPool extends BaseConnectionPool {
   /**
    * Update the ConnectionPool with new connections.
    *
-   * @param {array} array of connections
-   * @returns {ConnectionPool}
+   * @param { Connection } array of connections
+   * @returns { ConnectionPool }
    */
-  update(connections: Connection[]) {
+  update(connections: Connection[]): this {
     super.update(connections);
     this.dead = [];
     return this;

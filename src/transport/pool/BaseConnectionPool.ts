@@ -28,14 +28,15 @@
  */
 
 import { URL } from 'node:url';
-import type { SecureContextOptions } from 'node:tls';
+import type { ConnectionOptions as TlsConnectionOptions, SecureContextOptions } from 'node:tls';
 
 import { NOOP } from '@/utils';
-import { BaseConnectionPoolOptions, BasicAuth } from '@/types/pool';
-import { AgentOptions } from '@/types/connection';
-import Debug from 'debug'
+import { BaseConnectionPoolOptions, BasicAuth, GetConnectionOptions } from '@/types/pool';
+import { AgentOptions, ConnectionOptions } from '@/types/connection';
+import Debug from 'debug';
 import { Connection } from '#transport';
-const debug = Debug('opensearch:connection-pool')
+import { ConfigurationError } from '#/src/errors';
+const debug = Debug('opensearch:connection-pool');
 
 // export class BaseConnectionPool {
 //   connections: Connection[];
@@ -81,8 +82,8 @@ export class BaseConnectionPool {
     this._proxy = opts.proxy || null;
   }
 
-  getConnection() {
-    throw new Error('getConnection must be implemented');
+  getConnection(opts: GetConnectionOptions): Connection | null {
+    throw new ConfigurationError('getConnection must be implemented');
   }
 
   markAlive(connection: Connection): this {
@@ -98,7 +99,7 @@ export class BaseConnectionPool {
   /**
    * Creates a new connection instance.
    */
-  createConnection(opts) {
+  createConnection(opts: string | ConnectionOptions): Connection {
     if (typeof opts === 'string') {
       opts = this.urlToHost(opts);
     }
@@ -134,25 +135,30 @@ export class BaseConnectionPool {
    *
    * @param {object|string} host
    * @returns {ConnectionPool}
+   *
    */
-  addConnection(opts: string | unknown): Connection {
+  addConnection(opts: ConnectionOptions | ConnectionOptions[]) {
     if (Array.isArray(opts)) {
-      return opts.forEach((o) => this.addConnection(o));
+      const connections = opts.map((o) => this.createConnection(o));
+      return this.update([...this.connections, ...connections]);
+    } else {
+      const connectionId = opts.id;
+      const connectionUrl = opts.url.href;
+
+      const connectionById = this.connections.find((c) => c.id === connectionId);
+      const connectionByUrl = this.connections.find((c) => c.id === connectionUrl);
+
+      if (connectionById || connectionByUrl) {
+        throw new Error(`Connection with id '${opts.id || opts.url.href}' is already present`);
+      }
+
+      if (typeof opts === 'string') {
+        opts = this.urlToHost(opts);
+      }
+
+      const connection = this.createConnection(opts);
+      return this.update([...this.connections, connection]);
     }
-
-    if (typeof opts === 'string') {
-      opts = this.urlToHost(opts);
-    }
-
-    const connectionById = this.connections.find((c) => c.id === opts.id);
-    const connectionByUrl = this.connections.find((c) => c.id === opts.url.href);
-
-    if (connectionById || connectionByUrl) {
-      throw new Error(`Connection with id '${opts.id || opts.url.href}' is already present`);
-    }
-
-    this.update([...this.connections, opts]);
-    return this.connections[this.size - 1];
   }
 
   /**
@@ -296,7 +302,7 @@ export class BaseConnectionPool {
    * @param {string} url
    * @returns {object} host
    */
-  urlToHost(url: string): { url: URL } {
+  urlToHost(url: string): ConnectionOptions {
     return {
       url: new URL(url),
     };
