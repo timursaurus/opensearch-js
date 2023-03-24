@@ -31,3 +31,4 @@ export const kInitialOptions = Symbol('opensearchjs-initial-options');
 export const kChild = Symbol('opensearchjs-child');
 export const kExtensions = Symbol('opensearchjs-extensions');
 export const kEventEmitter = Symbol('opensearchjs-event-emitter');
+export const kJsonOptions = Symbol('Secure json parse options');

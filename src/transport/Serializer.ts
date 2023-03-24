@@ -31,12 +31,12 @@ import Debug from 'debug';
 import { stringify } from 'querystring';
 import sjson from 'secure-json-parse';
 import { DeserializationError, SerializationError } from '@/errors';
+import { kJsonOptions } from '../symbols';
 const debug = Debug('opensearch');
 
 export interface SerializerOptions {
   disablePrototypePoisoningProtection?: boolean | 'proto' | 'constructor';
 }
-const kJsonOptions = Symbol('Secure json parse options');
 
 export class Serializer {
   [kJsonOptions]: {
