@@ -347,4 +347,5 @@ module.exports = {
   Serializer,
   events,
   errors,
+  ...errors,
 };

@@ -5518,6 +5518,7 @@ declare const events: {
   RESURRECT: string;
 };
 
+export * from './lib/errors';
 export {
   Client,
   Transport,
